@@ -18,19 +18,25 @@ import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
 class GameFrame extends JFrame{
-	JButton target[] = new JButton[50];
-	JLabel hi;
+	JButton target[] = new JButton[100];
+	JLabel xImage;
 	boolean shot = false;
 	static int i = 0;
 	int targetX = 50, targetY = 50;
 	int gameScore = 0;
 	int gameLife = 3;
-	String m;
+	int delay = 1000;
 	
 	ImageIcon image = new ImageIcon("images/eqypt.jpg");
 	Image img = image.getImage();
 	Image changeImg = img.getScaledInstance(100, 100,Image.SCALE_SMOOTH);
 	ImageIcon targetIcon = new ImageIcon(changeImg);
+	
+	ImageIcon image_2 = new ImageIcon("images/eqypt_star.jpg");
+	Image img_2 = image_2.getImage();
+	Image changeImg_2 = img_2.getScaledInstance(100, 100,Image.SCALE_SMOOTH);
+	ImageIcon pressedIcon = new ImageIcon(changeImg_2);
+	
 	private GamePanel gamepanel = new GamePanel();
 	private BottomPanel bottompanel = new BottomPanel();
 	private TopPanel toppanel = new TopPanel();
@@ -93,43 +99,6 @@ class GameFrame extends JFrame{
 		}
 	}
 
-	class TargetThread extends Thread{
-		MyActionListener listener = new MyActionListener(); 
-		TargetThread(int x, int y){
-		}
-
-		void printTarget(JButton target) {
-			setLayout(null);
-			target = new JButton(targetIcon);
-			target.setSize(100, 100);
-			target.setLocation(targetX, targetY);
-			add(target);
-			target.addActionListener(listener);
-
-			revalidate();
-			repaint();
-		}
-		void getRandomLocation() {
-			targetX = (int)(Math.random()*1000) + 80;
-			targetY = (int)(Math.random()*550) + 50;
-			
-		}
-		public void run() {
-			while(true) {
-				try {
-					Thread.sleep(1000);
-					getRandomLocation();
-					new TargetThread(targetX, targetY);
-					printTarget(target[i]);
-					i++;
-				}
-				catch(InterruptedException e){
-					return;
-					}
-				if(i>=50) i=0;
-				}
-			}	
-	}
 	class MyActionListener implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
 			JButton btn = (JButton)e.getSource();
@@ -142,8 +111,58 @@ class GameFrame extends JFrame{
 	}
 	class MyMouseListener extends MouseAdapter{
 		public void mouseClicked(MouseEvent e) {
+			ImageIcon image = new ImageIcon("images/XImage.png");
+			Image img = image.getImage();
+			Image changeImg = img.getScaledInstance(50, 50,Image.SCALE_SMOOTH);
+			ImageIcon XIcon = new ImageIcon(changeImg);
+			
+			xImage = new JLabel(XIcon);
+			xImage.setSize(50,50);
+			xImage.setLocation(e.getX(), e.getY());
+			add(xImage);
+			revalidate();
+			repaint();
 			gameLife--;
 		}
+	}
+	class TargetThread extends Thread{
+		MyActionListener listener = new MyActionListener(); 
+		TargetThread(int x, int y){
+		}
+		
+		void printTarget(JButton target) {
+			setLayout(null);
+			target = new JButton(targetIcon);
+			target.setRolloverIcon(pressedIcon);
+			target.setPressedIcon(pressedIcon);
+			target.setSize(100, 100);
+			target.setLocation(targetX, targetY);
+			add(target);
+			target.addActionListener(listener);
+			
+			revalidate();
+			repaint();
+		}
+		void getRandomLocation() {
+			targetX = (int)(Math.random()*1000) + 80;
+			targetY = (int)(Math.random()*550) + 50;
+			
+		}
+		public void run() {
+			while(true) {
+				try {
+					Thread.sleep(delay);
+					getRandomLocation();
+					new TargetThread(targetX, targetY);
+					printTarget(target[i]);
+					i++;
+				}
+				catch(InterruptedException e){
+					return;
+				}
+				if(i>=50) i=0;
+			}
+		}	
 	}
 	class TimerThread extends Thread{
 		JLabel timerLabel;
@@ -156,6 +175,7 @@ class GameFrame extends JFrame{
 			while(true) {
 				timerLabel.setText("     TIME : " + Integer.toString(n));
 				n++;
+				delay-=10;
 				try {
 					Thread.sleep(1000);
 				}
@@ -172,7 +192,7 @@ class GameFrame extends JFrame{
 		}
 		public void run() {
 			while(true) {
-				scoreLabel.setText(m+"     SCORE : " + Integer.toString(gameScore));
+				scoreLabel.setText("     SCORE : " + Integer.toString(gameScore));
 				try {
 					Thread.sleep(100);
 				}

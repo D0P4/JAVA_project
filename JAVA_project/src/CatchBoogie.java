@@ -31,22 +31,36 @@ class GameFrame extends JFrame{
 	boolean shot = false;
 	static int i = 0;
 	int targetX = 50, targetY = 50;
-	int targetXSize = 100, targetYSize = 100;
+	static int targetXSize = 100;
+	static int targetYSize = 100;
 	int gameScore = 0;
 	int gameLife = 3;
 	int delay = 1000;
 	int time = 0;
 	int targetCount = 0;
 	
-	ImageIcon image = new ImageIcon("images/상상부기.png");
-	Image img = image.getImage();
-	Image changeImg = img.getScaledInstance(targetXSize, targetYSize,Image.SCALE_SMOOTH);
-	ImageIcon targetIcon = new ImageIcon(changeImg);
+	static ImageIcon image = new ImageIcon("images/상상부기.png");
+	static Image img = image.getImage();
+	static Image changeImg = img.getScaledInstance(targetXSize, targetYSize,Image.SCALE_SMOOTH);
+	static ImageIcon target1 = new ImageIcon(changeImg);
 	
-	ImageIcon image2 = new ImageIcon("images/방패부기.png");
-	Image img2 = image2.getImage();
-	Image changeImg2 = img2.getScaledInstance(targetXSize, targetYSize,Image.SCALE_SMOOTH);
-	ImageIcon targetIcon2 = new ImageIcon(changeImg2);
+	static ImageIcon image2 = new ImageIcon("images/방패부기.png");
+	static Image img2 = image2.getImage();
+	static Image changeImg2 = img2.getScaledInstance(targetXSize, targetYSize,Image.SCALE_SMOOTH);
+	static ImageIcon target2 = new ImageIcon(changeImg2);
+	
+	static ImageIcon image3 = new ImageIcon("images/cat.png");
+	static Image img3 = image3.getImage();
+	static Image changeImg3 = img3.getScaledInstance(targetXSize, targetYSize,Image.SCALE_SMOOTH);
+	static ImageIcon target3 = new ImageIcon(changeImg3);
+	
+	static ImageIcon image4 = new ImageIcon("images/방패냥이.png");
+	static Image img4 = image4.getImage();
+	static Image changeImg4 = img4.getScaledInstance(targetXSize, targetYSize,Image.SCALE_SMOOTH);
+	static ImageIcon target4 = new ImageIcon(changeImg4);
+	
+	static ImageIcon targetIcon = target1;
+	static ImageIcon targetIcon2 = target2;
 	
 	ImageIcon Ximage = new ImageIcon("images/XImage.png");
 	Image Ximg = Ximage.getImage();
@@ -74,8 +88,17 @@ class GameFrame extends JFrame{
 		
 		
 	}
+	static void selectIcon(int num) {
+		if(num == 1) {
+			targetIcon = target1;
+			targetIcon2 = target2;
+		}
+		else {
+			targetIcon = target3;
+			targetIcon2 = target4;
+		}
+	}
 	void changeEndPage() {
-		setVisible(false);
 		cf.setVisible(true);
 		cf.change("rPanel");
 		dispose();
@@ -417,6 +440,11 @@ class characterPanel extends JPanel {
 	class MyActionListener implements ActionListener { // 버튼 키 눌리면 패널 1번 호출
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			JButton b = (JButton)e.getSource();
+			if(b.getText().equals("상상부기"))
+				GameFrame.selectIcon(1);
+			else if(b.getText().equals("한냥이"))
+				GameFrame.selectIcon(0);
 			select.change("sPanel");
 		}
 	}

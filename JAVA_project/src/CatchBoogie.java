@@ -9,12 +9,23 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
 
-import javax.swing.AbstractButton;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -22,7 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
 class GameFrame extends JFrame{
@@ -33,11 +44,12 @@ class GameFrame extends JFrame{
 	int targetX = 50, targetY = 50;
 	static int targetXSize = 100;
 	static int targetYSize = 100;
-	int gameScore = 0;
+	static int gameScore = 0;
 	int gameLife = 3;
 	int delay = 1000;
 	int time = 0;
 	int targetCount = 0;
+	static String playerName;
 	
 	static ImageIcon image = new ImageIcon("images/상상부기.png");
 	static Image img = image.getImage();
@@ -72,6 +84,8 @@ class GameFrame extends JFrame{
 	private TopPanel toppanel = new TopPanel();
 	changePanelMainFrame cf;
 	
+	
+	
 	GameFrame(changePanelMainFrame win) {
 		this.cf = win;
 		
@@ -85,6 +99,7 @@ class GameFrame extends JFrame{
 		c.addMouseListener(new MyMouseListener());
 		setSize(1280,720);
 		setVisible(true);
+		gameScore = 0;
 		
 		
 	}
@@ -95,10 +110,24 @@ class GameFrame extends JFrame{
 		}
 		else {
 			targetIcon = target3;
+			
 			targetIcon2 = target4;
 		}
 	}
-	void changeEndPage() {
+	void addScorefile() throws IOException {
+		String info = playerName + " | " + gameScore;
+		FileWriter fout;
+		try{
+			fout = new FileWriter("player.txt",true);    //파일명과 같은 파일명이 존재할시 덧붙여쓸여부판단
+        	fout.write(info);
+        	fout.write("\n");
+        	fout.close();        //저장 후 텍스트필드의 값을 가져온 자원들을 해제한다.
+		}catch(Exception n){
+            System.out.println(n);
+        }
+	}
+	
+	void changeEndPage() throws IOException {
 		cf.setVisible(true);
 		cf.change("rPanel");
 		dispose();
@@ -155,6 +184,20 @@ class GameFrame extends JFrame{
 	
 	class MyMouseListener extends MouseAdapter{
 		public void mousePressed(MouseEvent e) {
+			try {
+				Clip clip = AudioSystem.getClip();
+				File audioFile = new File("sound/error.wav");
+				AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+				clip.open(audioStream);
+				clip.start();
+			} catch (LineUnavailableException e1) {
+				e1.printStackTrace();
+			} catch (UnsupportedAudioFileException e1) {
+				e1.printStackTrace();
+			} catch (IOException e1) {
+
+				e1.printStackTrace();
+			}
 			xImage = new JLabel(XIcon);
 			xImage.setSize(30,30);
 			xImage.setLocation(e.getX(), e.getY());
@@ -165,6 +208,7 @@ class GameFrame extends JFrame{
 		}
 		
 	}
+	
 	class TargetThread extends Thread{
 		JLabel gameLabel;
 
@@ -183,6 +227,19 @@ class GameFrame extends JFrame{
 				public void mousePressed(MouseEvent e) {
 					JLabel la= (JLabel)e.getSource();
 					if(la.getIcon()==targetIcon) {
+						try {
+							Clip clip = AudioSystem.getClip();
+							File audioFile = new File("sound/hit.wav");
+							AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+							clip.open(audioStream);
+							clip.start();
+						} catch (LineUnavailableException e1) {
+							e1.printStackTrace();
+						} catch (UnsupportedAudioFileException e1) {
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
 						Container con = la.getParent();				
 						con.remove(la);
 						con.revalidate();
@@ -207,6 +264,20 @@ class GameFrame extends JFrame{
 					JLabel la= (JLabel)e.getSource();
 					if(la.getIcon()==targetIcon2) {
 						if(e.getClickCount()==2) {
+							try {
+								Clip clip = AudioSystem.getClip();
+								File audioFile = new File("sound/hit.wav");
+								AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+								clip.open(audioStream);
+								clip.start();
+							} catch (LineUnavailableException e1) {
+								e1.printStackTrace();
+							} catch (UnsupportedAudioFileException e1) {
+								e1.printStackTrace();
+							} catch (IOException e1) {
+		
+								e1.printStackTrace();
+							}
 							Container con = la.getParent();				
 							con.remove(la);
 							con.revalidate();
@@ -292,7 +363,13 @@ class GameFrame extends JFrame{
 			while(true) {
 				targetCountLabel.setText("     target : " + Integer.toString(targetCount));
 				if(targetCount >= 10) {
-					changeEndPage();
+					try {
+						addScorefile();
+						changeEndPage();
+						break;
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 				try {
 					Thread.sleep(10);
@@ -312,7 +389,13 @@ class GameFrame extends JFrame{
 			while(true) {
 				lifeLabel.setText("LIFE : " + Integer.toString(gameLife) + "     ");
 				if(gameLife <= 0) {
-					changeEndPage();
+					try {
+						addScorefile();
+						changeEndPage();
+						break;
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 				try {
 					Thread.sleep(100);
@@ -325,16 +408,15 @@ class GameFrame extends JFrame{
 	}
 }
 class startPanel extends JPanel {
+
 	private RoundedButton btn;
 	private RoundedButton btn2;
 	private JLabel textlabel;
 	private JLabel img;
-	private JLabel img2;
-	private changePanelMainFrame win;
-	private changePanelMainFrame select;
-	
 
-	public startPanel(changePanelMainFrame win, changePanelMainFrame select) {
+	private changePanelMainFrame win;
+
+	public startPanel(changePanelMainFrame win) {
 		this.win = win;
 		Color color= new Color(232, 217, 244);
 		Font font= new Font("Kim jung chul Script Bold", Font.ITALIC, 80);
@@ -349,25 +431,25 @@ class startPanel extends JPanel {
 		textlabel.setLocation(440, 0);
 		add(textlabel);
 		
-		
-		img2= new JLabel(bugi);
-		img2.setIcon(bugi);
-		img2.setSize(300,300);
-		img2.setLocation(900, 300);
-		add(img2);
-		
 		img= new JLabel(bugi);
 		img.setIcon(bugi);
 		img.setSize(300,300);
 		img.setLocation(100, 300);
 		add(img);
 		
+		img= new JLabel(bugi);
+		img.setIcon(bugi);
+		img.setSize(300,300);
+		img.setLocation(900, 300);
+		add(img);
+		
+		
 		btn = new RoundedButton("게임시작!");
 		btn.setSize(300, 40);
 		btn.setLocation(500, 450);
 		add(btn);
 		
-		this.select= select;
+	
 		btn2= new RoundedButton("캐릭터선택");
 		btn2.setSize(300, 40);
 		btn2.setLocation(500, 550);
@@ -391,7 +473,7 @@ class startPanel extends JPanel {
 	class MyActionListener2 implements ActionListener { // 버튼 키 눌리면 패널 2번 호출
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			select.change("cPanel");
+			win.change("cPanel");
 		}
 	}
 
@@ -401,7 +483,7 @@ class characterPanel extends JPanel {
 	changePanelMainFrame select = null;
 	private JLabel img;
 	private JLabel img2;
-
+	
 	characterPanel(changePanelMainFrame select) {
 		this.select = select;
 		setLayout(null);
@@ -452,9 +534,11 @@ class characterPanel extends JPanel {
 
 
 class gamePanel extends JPanel {
+	Scanner scanner = new Scanner(System.in);
+	FileWriter fout = null;
 	changePanelMainFrame win = null;
 	private JScrollPane scrollPanel;
-	private JTextArea txtArea;
+	private JTextField txtArea;
 	private JLabel textlabel;
 	private JLabel img;
 	GameFrame gf;
@@ -484,7 +568,7 @@ class gamePanel extends JPanel {
 		btn.setLocation(800, 550);
 		add(btn);
 
-		txtArea = new JTextArea();
+		txtArea = new JTextField();
 
 		scrollPanel = new JScrollPane(txtArea);
 		scrollPanel.setSize(300, 40);
@@ -501,20 +585,21 @@ class gamePanel extends JPanel {
 			gf = new GameFrame(win);
 			gf.setVisible(true);
 			win.dispose();
+			GameFrame.playerName = txtArea.getText();
+			
 		}
 	}
 }
-	
-	
 
 	class resultpanel extends JPanel { //저장 어떻게 하는지 모르겠어
+		FileReader fin;
 		changePanelMainFrame win = null;
+		TextArea ta = new TextArea();
 		private JLabel textlabel;
 		private JLabel textlabel2;
 		private JLabel img;
 
-		resultpanel(changePanelMainFrame win) {
-			
+		resultpanel(changePanelMainFrame win) throws IOException {
 			this.win = win;
 			setLayout(null);
 			Color color= new Color(255, 255, 244);
@@ -523,18 +608,19 @@ class gamePanel extends JPanel {
 			ImageIcon wink = new ImageIcon(("images/wink.png"));
 			setBackground(color);
 			
-			textlabel=new JLabel("Conglatulations!");
-			textlabel.setForeground(color.lightGray);
+			textlabel=new JLabel("Game Over");
+			textlabel.setForeground(color.darkGray);
 			textlabel.setFont(font);
 			textlabel.setSize(800,150);
 			textlabel.setLocation(100, 0);
 			add(textlabel);
 			
-			textlabel2=new JLabel("축하해! 네가 새로운 1등이야!!");
-			textlabel2.setForeground(color.lightGray);
+			String info = GameFrame.playerName + " | " + GameFrame.gameScore;
+			textlabel2=new JLabel(info);
+			textlabel2.setForeground(color.darkGray);
 			textlabel2.setFont(font2);
-			textlabel2.setSize(800,150);
-			textlabel2.setLocation(500,350);
+			textlabel2.setSize(300,80);
+			textlabel2.setLocation(700,40);
 			add(textlabel2);
 			
 			img= new JLabel(wink);
@@ -543,50 +629,44 @@ class gamePanel extends JPanel {
 			img.setLocation(100, 275);
 			add(img);
 			
-			RoundedButton btn = new RoundedButton("랭킹 보러가기!");
+			RoundedButton btn = new RoundedButton("다시하기");
 			btn.setSize(300, 40);
-			btn.setLocation(800, 550);
+			btn.setLocation(800, 580);
 			add(btn);
 
-			
-			
+			String str;
+            BufferedReader br = new BufferedReader(new FileReader("player.txt"));   // 불러올 파일이름
+            while((str=br.readLine())!=null)
+             ta.append(str+"\n"); 
+            ta.setFont(font2);
+            ta.setSize(300, 400);
+    		ta.setLocation(700, 150);
+    		add(ta);
+    		br.close();
+
 			btn.addActionListener(new MyActionListener());
 		}
 		
 
-	class MyActionListener implements ActionListener { // 버튼 키 눌리면 패널 1번 호출
+	class MyActionListener implements ActionListener { 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			win.change("sPanel");
 		}
 	}
 }
-	
-	/*/class rankingpanel extends JPanel { 
-		changePanelMainFrame win = null;
-		private JLabel textlabel;
-		private JLabel textlabel2;
-		private JLabel img;
-
-		rankingpanel(changePanelMainFrame win) {
-			this.win = win;
-			setLayout(null);
-		}
-	}
-	/*/
-
 class changePanelMainFrame extends JFrame {
 	public startPanel sPanel = null;
 	public characterPanel cPanel = null;
 	public gamePanel gPanel = null;
 	public resultpanel rPanel = null;
 	public GameFrame gameFrame = null;
-	public changePanelMainFrame() {
+	public changePanelMainFrame() throws IOException {
 		this.setTitle("Panel Change");
-		sPanel = new startPanel(this, this);
+		sPanel = new startPanel(this);
 		cPanel = new characterPanel(this);
 		gPanel = new gamePanel(this);
-		rPanel = new resultpanel(this);
+		
 
 		add(this.sPanel);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -594,7 +674,7 @@ class changePanelMainFrame extends JFrame {
 		setVisible(true);
 	}
 
-	public void change(String panelName) { // 패널 1번과 2번 변경 후 재설정
+	public void change(String panelName) { 
 		if (panelName.equals("sPanel")) {
 			getContentPane().removeAll();
 			getContentPane().add(sPanel);
@@ -608,12 +688,18 @@ class changePanelMainFrame extends JFrame {
 			repaint();
 		}
 		else if(panelName.equals("rPanel")) {
+			try {
+				rPanel = new resultpanel(this);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			getContentPane().removeAll();
 			getContentPane().add(rPanel);
 			revalidate();
 			repaint();
 		}
-		else if(panelName.equals("gPanel")) {
+		else {
 			getContentPane().removeAll();
 			getContentPane().add(gPanel);
 			revalidate();
@@ -687,8 +773,8 @@ class RoundedButton extends JButton{
 }
 
 public class CatchBoogie {
-
-	public static void main(String[] args) throws InterruptedException {
+	
+	public static void main(String[] args) throws InterruptedException, IOException {
 		new changePanelMainFrame();
 		
 	}
